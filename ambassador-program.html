@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambassador Program — Run Hub Northwest</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F4F7FB;
+    --ink: #3D4553;
+    --rust: #29ABE2;
+    --warm: #D6EEF9;
+    --mid: #5A6475;
+  }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 2rem;
+    border-bottom: 1px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: 'AMBASSADOR';
+    position: absolute;
+    bottom: -1.5rem;
+    left: -1rem;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(5rem, 18vw, 14rem);
+    font-weight: 700;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(13,31,60,0.13);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: -0.02em;
+  }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.1s;
+  }
+
+  .nav-logo img {
+    height: 40px;
+    width: auto;
+    display: block;
+  }
+
+  .nav-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rust);
+    border: 1px solid var(--rust);
+    padding: 0.3rem 0.7rem;
+  }
+
+  .hero-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 0;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.25s;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 9vw, 7rem);
+    line-height: 0.95;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.35s;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--rust);
+  }
+
+  .hero-desc {
+    max-width: 38ch;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--mid);
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.5s;
+  }
+
+  .hero-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.65s;
+  }
+
+  .cohort-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .cohort-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  .cohort-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  .apply-hero-btn {
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    padding: 1rem 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .apply-hero-btn:hover {
+    background: var(--rust);
+    transform: translateY(-2px);
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 5rem 2rem;
+    border-bottom: 1px solid rgba(13,31,60,0.15);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(13,31,60,0.12);
+  }
+
+  /* WHO */
+  .who-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid rgba(13,31,60,0.15);
+  }
+
+  @media (max-width: 600px) {
+    .who-grid { grid-template-columns: 1fr; }
+  }
+
+  .who-cell {
+    padding: 2rem;
+    border-right: 1px solid rgba(13,31,60,0.15);
+    border-bottom: 1px solid rgba(13,31,60,0.15);
+  }
+
+  .who-cell:nth-child(even) { border-right: none; }
+  .who-cell:nth-last-child(-n+2) { border-bottom: none; }
+
+  .who-cell-icon {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+
+  .who-cell-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .who-cell-text {
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--mid);
+  }
+
+  /* EXPECTATIONS */
+  .expect-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .expect-item {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 1rem;
+    padding: 1.75rem 0;
+    border-bottom: 1px solid rgba(13,31,60,0.1);
+    align-items: start;
+  }
+
+  .expect-item:last-child { border-bottom: none; }
+
+  .expect-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: rgba(13,31,60,0.15);
+    line-height: 1;
+    font-weight: 700;
+    padding-top: 0.1rem;
+  }
+
+  .expect-content-title {
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .expect-content-text {
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--mid);
+  }
+
+  /* PERKS */
+  .perks-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+    border: 1px solid rgba(13,31,60,0.15);
+    margin-top: 0.5rem;
+  }
+
+  .perk-card {
+    padding: 2rem 1.5rem;
+    border-right: 1px solid rgba(13,31,60,0.15);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.25s;
+  }
+
+  .perk-card:last-child { border-right: none; }
+
+  .perk-card:hover { background: var(--warm); }
+
+  .perk-card::before {
+    content: attr(data-n);
+    position: absolute;
+    top: -0.5rem;
+    right: 0.75rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    font-weight: 700;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(13,31,60,0.06);
+    pointer-events: none;
+  }
+
+  .perk-icon { font-size: 1.5rem; margin-bottom: 1rem; display: block; }
+
+  .perk-title {
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .perk-text {
+    font-size: 0.7rem;
+    line-height: 1.65;
+    color: var(--mid);
+  }
+
+  /* APPLICATION FORM */
+  .form-wrap {
+    max-width: 640px;
+  }
+
+  .form-row {
+    margin-bottom: 1.75rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 0.5rem;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(13,31,60,0.25);
+    padding: 0.6rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-bottom-color: var(--rust);
+  }
+
+  textarea { resize: none; min-height: 80px; }
+
+  .form-two { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+  @media (max-width: 500px) { .form-two { grid-template-columns: 1fr; } }
+
+  .submit-btn {
+    margin-top: 2rem;
+    background: var(--rust);
+    color: var(--cream);
+    border: none;
+    padding: 1.1rem 2.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    width: 100%;
+  }
+
+  .submit-btn:hover { background: var(--ink); transform: translateY(-2px); }
+
+  /* SUCCESS */
+  .success-msg {
+    display: none;
+    padding: 2rem;
+    border: 1px solid var(--rust);
+    margin-top: 1.5rem;
+  }
+
+  .success-msg.show { display: block; }
+
+  .success-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .success-text {
+    font-size: 0.75rem;
+    color: var(--mid);
+    line-height: 1.7;
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards 0.8s;
+  }
+
+  .footer-note {
+    font-size: 0.65rem;
+    color: var(--mid);
+    letter-spacing: 0.05em;
+  }
+
+  .footer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--rust);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <nav class="nav">
+    <span class="nav-logo"><img src="RWNW-Centered-Vector.png" alt="Run Hub Northwest"></span>
+    <span class="nav-tag">Now Accepting Applications</span>
+  </nav>
+
+  <div class="hero-body">
+    <p class="hero-eyebrow">Run Hub Northwest · Community Ambassador Program 2025</p>
+    <h1 class="hero-title">Be the reason<br>someone<br><em>comes back.</em></h1>
+    <p class="hero-desc">Share the responsibility of belonging, connection, and culture across the community. Not just leaders.</p>
+  </div>
+
+  <div class="hero-foot">
+    <div class="cohort-stat">
+      <span class="cohort-num">5–6</span>
+      <span class="cohort-label">Ambassadors · 1-Year Term</span>
+    </div>
+    <button class="apply-hero-btn" onclick="document.getElementById('apply').scrollIntoView({behavior:'smooth'})">Apply Now →</button>
+  </div>
+</section>
+
+<!-- WHO -->
+<section class="section" id="who">
+  <p class="section-label">Who Ambassadors Are</p>
+  <div class="who-grid">
+    <div class="who-cell">
+      <span class="who-cell-icon">🤝</span>
+      <div class="who-cell-title">Culture Carriers</div>
+      <p class="who-cell-text">Not staff. Not pace leaders. Trusted, consistent members who model our values and make people feel welcome from day one.</p>
+    </div>
+    <div class="who-cell">
+      <span class="who-cell-icon">👟</span>
+      <div class="who-cell-title">Consistent Presence</div>
+      <p class="who-cell-text">Show up most weeks. Arrive early, linger after. Be visibly approachable. That alone changes how new runners experience the group.</p>
+    </div>
+    <div class="who-cell">
+      <span class="who-cell-icon">💬</span>
+      <div class="who-cell-title">Community Builders</div>
+      <p class="who-cell-text">Spark conversations, celebrate milestones, encourage post-run hangouts. Help turn a run into a community.</p>
+    </div>
+    <div class="who-cell">
+      <span class="who-cell-icon">📣</span>
+      <div class="who-cell-title">Honest Voices</div>
+      <p class="who-cell-text">Share real feedback through quarterly surveys. Tell us what's working, what's not, and what newcomers are experiencing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- EXPECTATIONS -->
+<section class="section" id="expectations">
+  <p class="section-label">Core Expectations</p>
+  <div class="expect-list">
+    <div class="expect-item">
+      <span class="expect-num">01</span>
+      <div>
+        <div class="expect-content-title">Welcome newcomers</div>
+        <p class="expect-content-text">Greet at least one new runner each week. Introduce them to someone else. Help first-timers understand where to stand, how regrouping works, and what to expect.</p>
+      </div>
+    </div>
+    <div class="expect-item">
+      <span class="expect-num">02</span>
+      <div>
+        <div class="expect-content-title">Be present & approachable</div>
+        <p class="expect-content-text">Attend runs regularly. Most weeks, life acknowledged. Arrive early, stay late. Your visible presence is the role.</p>
+      </div>
+    </div>
+    <div class="expect-item">
+      <span class="expect-num">03</span>
+      <div>
+        <div class="expect-content-title">Model the culture</div>
+        <p class="expect-content-text">Use inclusive, encouraging language. Reinforce "community first, pace second." Run different distances to avoid pace silos. Be active, not passive.</p>
+      </div>
+    </div>
+    <div class="expect-item">
+      <span class="expect-num">04</span>
+      <div>
+        <div class="expect-content-title">Build post-run energy</div>
+        <p class="expect-content-text">Attend post-run hangouts occasionally. Help normalize gathering together instead of dispersing the moment the run ends.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PERKS -->
+<section class="section" id="perks">
+  <p class="section-label">Ambassador Support & Perks</p>
+  <div class="perks-strip">
+    <div class="perk-card" data-n="1">
+      <span class="perk-icon">👟</span>
+      <div class="perk-title">2 Pairs of Shoes</div>
+      <p class="perk-text">Per year, so you can speak authentically about the product you're wearing every week.</p>
+    </div>
+    <div class="perk-card" data-n="2">
+      <span class="perk-icon">🍕</span>
+      <div class="perk-title">Kickoff Pizza Party</div>
+      <p class="perk-text">Launch the cohort with a group session. Build bonds, align on expectations, and get a 1-pager of key notes.</p>
+    </div>
+    <div class="perk-card" data-n="3">
+      <span class="perk-icon">🎉</span>
+      <div class="perk-title">Annual Event</div>
+      <p class="perk-text">One ambassador-only run + social each year to reconnect and celebrate the cohort.</p>
+    </div>
+    <div class="perk-card" data-n="4">
+      <span class="perk-icon">📚</span>
+      <div class="perk-title">Product Training</div>
+      <p class="perk-text">Light and informal, so you can speak confidently about the shoes without it feeling like a sales pitch.</p>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATION FORM -->
+<section class="section" id="apply">
+  <p class="section-label">Apply to the 2025 Cohort</p>
+  <div class="form-wrap">
+    <form id="appForm" onsubmit="handleSubmit(event)">
+      <div class="form-two">
+        <div class="form-row">
+          <label>First Name</label>
+          <input type="text" name="firstName" placeholder="Jane" required>
+        </div>
+        <div class="form-row">
+          <label>Last Name</label>
+          <input type="text" name="lastName" placeholder="Doe" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="jane@example.com" required>
+      </div>
+      <div class="form-row">
+        <label>How long have you been running with us?</label>
+        <select name="howLong" required>
+          <option value="" disabled selected>Select one</option>
+          <option>Less than 3 months</option>
+          <option>3–6 months</option>
+          <option>6–12 months</option>
+          <option>1–2 years</option>
+          <option>2+ years</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Why do you want to be an ambassador?</label>
+        <textarea name="whyAmbassador" placeholder="What draws you to this role..." required></textarea>
+      </div>
+      <div class="form-row">
+        <label>How do you currently help newcomers feel welcome?</label>
+        <textarea name="welcomeNewcomers" placeholder="Share a moment or habit..." required></textarea>
+      </div>
+      <div class="form-row">
+        <label>Anything else we should know?</label>
+        <textarea name="anythingElse" placeholder="Optional"></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Submit Application →</button>
+    </form>
+    <div class="success-msg" id="successMsg">
+      <div class="success-title">Application received.</div>
+      <p class="success-text">Thanks for putting your hand up. We'll review applications and be in touch soon. In the meantime, keep showing up. That's already what this role is about.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span class="footer-note">Run Hub Northwest · Community Ambassador Program · 1-Year Term · Cohort of 5–6</span>
+  <span class="footer-dot"></span>
+</footer>
+
+<script>
+  // Scroll reveal
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  sections.forEach(s => observer.observe(s));
+
+  // Form submit
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = 'Submitting...';
+    btn.disabled = true;
+
+    const form = document.getElementById('appForm');
+    const payload = {
+      firstName:        form.querySelector('[name="firstName"]').value,
+      lastName:         form.querySelector('[name="lastName"]').value,
+      email:            form.querySelector('[name="email"]').value,
+      howLong:          form.querySelector('[name="howLong"]').value,
+      whyAmbassador:    form.querySelector('[name="whyAmbassador"]').value,
+      welcomeNewcomers: form.querySelector('[name="welcomeNewcomers"]').value,
+      anythingElse:     form.querySelector('[name="anythingElse"]').value,
+    };
+
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytlbAv3YyP5XVBwPW5TCOX10VpIaQ-gCAAk8ZiNML5-nAUEqBVaVbkpCf-oHPEFnL-/exec';
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      // no-cors swallows errors; submission likely succeeded
+      console.warn('fetch note:', err);
+    }
+
+    form.style.display = 'none';
+    document.getElementById('successMsg').classList.add('show');
+  }
+</script>
+</body>
+</html>
