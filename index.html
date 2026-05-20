@@ -544,15 +544,15 @@
     <form id="appForm" onsubmit="handleSubmit(event)">
       <div class="form-row">
         <label>Full name</label>
-        <input type="text" placeholder="Your name" required>
+        <input id="fullName" type="text" placeholder="Your name" required>
       </div>
       <div class="form-row">
         <label>Email</label>
-        <input type="email" placeholder="you@email.com" required>
+        <input id="email" type="email" placeholder="you@email.com" required>
       </div>
       <div class="form-row">
         <label>How long have you been running with us?</label>
-        <select required>
+        <select id="howLong" required>
           <option value="" disabled selected>Select one</option>
           <option>Less than 3 months</option>
           <option>3-6 months</option>
@@ -563,17 +563,17 @@
       </div>
       <div class="form-row">
         <label>Why do you want to be an ambassador?</label>
-        <textarea placeholder="What draws you to this role..." required></textarea>
+        <textarea id="whyAmbassador" placeholder="What draws you to this role..." required></textarea>
       </div>
       <div class="form-row">
         <label>How do you currently help newcomers feel welcome?</label>
-        <textarea placeholder="Share a moment or habit..." required></textarea>
+        <textarea id="welcomeNewcomers" placeholder="Share a moment or habit..." required></textarea>
       </div>
       <div class="form-row">
         <label>Anything else we should know?</label>
-        <textarea placeholder="Optional"></textarea>
+        <textarea id="anythingElse" placeholder="Optional"></textarea>
       </div>
-      <button type="submit" class="submit-btn">Submit application</button>
+      <button type="submit" class="submit-btn" id="submitBtn">Submit application</button>
     </form>
     <div class="success-msg" id="successMsg">
       <div class="success-title">Application received.</div>
@@ -596,8 +596,40 @@
 
   function handleSubmit(e) {
     e.preventDefault();
-    document.getElementById('appForm').style.display = 'none';
-    document.getElementById('successMsg').classList.add('show');
+    var btn = document.getElementById('submitBtn');
+    btn.textContent = 'Submitting...';
+    btn.disabled = true;
+
+    var name = document.getElementById('fullName').value.trim();
+    var nameParts = name.split(' ');
+    var firstName = nameParts[0] || '';
+    var lastName = nameParts.slice(1).join(' ') || '';
+
+    var data = {
+      firstName: firstName,
+      lastName: lastName,
+      email: document.getElementById('email').value,
+      howLong: document.getElementById('howLong').value,
+      whyAmbassador: document.getElementById('whyAmbassador').value,
+      welcomeNewcomers: document.getElementById('welcomeNewcomers').value,
+      anythingElse: document.getElementById('anythingElse').value
+    };
+
+    fetch('https://script.google.com/macros/s/AKfycbytlbAv3YyP5XVBwPW5TCOX10VpIaQ-gCAAk8ZiNML5-nAUEqBVaVbkpCf-oHPEFnL-/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(data)
+    })
+    .then(function() {
+      document.getElementById('appForm').style.display = 'none';
+      document.getElementById('successMsg').classList.add('show');
+    })
+    .catch(function(err) {
+      btn.textContent = 'Submit application';
+      btn.disabled = false;
+      alert('Something went wrong. Please try again.');
+    });
   }
 </script>
 </body>
